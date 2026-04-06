@@ -2,18 +2,16 @@
 //  AUTH.JS — Xử lý đăng nhập, đăng ký, xác nhận email, reset mật khẩu
 // =============================================================================
 
-// FIX: dùng origin động thay vì hardcode localhost
 const API = window.location.origin;
 
 let _pendingEmail = "";
-let _verifyCodeCooldown = 0; // Cooldown cho "Gửi lại mã xác nhận"
-let _forgotCodeCooldown = 0; // Cooldown cho "Gửi lại mã quên mật khẩu"
+let _verifyCodeCooldown = 0;
+let _forgotCodeCooldown = 0;
 
 // ─────────────────────────────────────────
 //  COOLDOWN HANDLER
 // ─────────────────────────────────────────
 
-// FIX: bỏ param cooldownVar thừa không được dùng
 function startResendCooldown(btnId, cooldownTime = 60) {
   const btn = document.getElementById(btnId);
   let remaining = cooldownTime;
@@ -76,7 +74,6 @@ window.getAuthUser  = getUser;
 // ─────────────────────────────────────────
 
 function authToast(msg, ms = 2800) {
-  // Dùng lại hàm toast của ui.js nếu có, fallback về element trực tiếp
   if (typeof toast === "function") { toast(msg, ms); return; }
   const t = document.getElementById("toast");
   if (!t) return;
@@ -90,7 +87,6 @@ function authToast(msg, ms = 2800) {
 
 // Tạo modal xác nhận dùng chung toàn app
 function showConfirm(message, onConfirm, onCancel) {
-  // Xóa modal cũ nếu còn tồn tại
   document.getElementById("confirmModal")?.remove();
 
   const overlay = document.createElement("div");
@@ -114,7 +110,6 @@ function showConfirm(message, onConfirm, onCancel) {
   overlay.onclick = (e) => { if (e.target === overlay) { close(); onCancel?.(); } };
 }
 
-// Xuất ra ngoài để ui.js dùng thay confirm()
 window.showConfirm = showConfirm;
 
 // ─────────────────────────────────────────
@@ -259,7 +254,6 @@ document.getElementById("btnVerify").onclick = async () => {
 
   if (!ok) return showError("verifyError", data.message || "Mã không đúng hoặc đã hết hạn");
 
-  // Thay alert() bằng toast + chuyển form
   hideModal();
   authToast("✅ Xác nhận email thành công! Vui lòng đăng nhập.", 3500);
   setTimeout(() => showModal("formLogin"), 500);
@@ -271,7 +265,6 @@ document.getElementById("resendCode").onclick = async () => {
   _verifyCodeCooldown = 60;
   await apiPost("/auth/resend-verify", { email: _pendingEmail });
   authToast("📧 Đã gửi lại mã xác nhận, vui lòng kiểm tra email.");
-  // FIX: bỏ param thừa cooldownVar
   startResendCooldown("resendCode", 60);
 };
 
@@ -281,7 +274,6 @@ document.getElementById("resendForgotCode").onclick = async () => {
   _forgotCodeCooldown = 60;
   await apiPost("/auth/resend-forgot", { email: _pendingEmail });
   authToast("📧 Đã gửi lại mã xác nhận, vui lòng kiểm tra email.");
-  // FIX: bỏ param thừa cooldownVar
   startResendCooldown("resendForgotCode", 60);
 };
 

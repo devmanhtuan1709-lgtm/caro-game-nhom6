@@ -53,7 +53,7 @@ router.post(
           passwordHash,
           isVerified: false,
           verifyToken,
-          verifyExpires,   // FIX: trước là resetExpires: verifyExpires (sai field)
+          verifyExpires,
           stats: { create: {} },
         },
       });
@@ -91,7 +91,6 @@ router.post("/verify", async (req, res) => {
       return res.status(400).json({ message: "Mã xác nhận không đúng" });
     }
 
-    // FIX: check đúng field verifyExpires thay vì resetExpires
     if (!user.verifyExpires || user.verifyExpires < new Date()) {
       return res.status(400).json({ message: "Mã xác nhận đã hết hạn, vui lòng đăng ký lại" });
     }
@@ -101,7 +100,7 @@ router.post("/verify", async (req, res) => {
       data: {
         isVerified: true,
         verifyToken: null,
-        verifyExpires: null,   // FIX: clear đúng field
+        verifyExpires: null,
       },
     });
 
@@ -124,7 +123,6 @@ router.post("/resend-verify", async (req, res) => {
     if (!user || user.isVerified) return res.json({ message: "ok" });
     const verifyToken = generateCode();
     const verifyExpires = new Date(Date.now() + 15 * 60 * 1000);
-    // FIX: lưu đúng field verifyExpires thay vì resetExpires
     await prisma.user.update({
       where: { email },
       data: { verifyToken, verifyExpires },

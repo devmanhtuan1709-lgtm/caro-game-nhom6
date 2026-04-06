@@ -187,7 +187,6 @@ class Room {
     }, 1000);
   }
 
-  // FIX: expose stopTimer để Server.js dùng nhất quán
   stopTimer() {
     clearInterval(this.timer);
     this.timer = null;
@@ -324,7 +323,6 @@ class Room {
     this.players.forEach(p => p.ready = false);
   }
 
-  // FIX: thêm destroy() để cleanup triệt để khi room bị xóa
   destroy() {
     clearInterval(this.timer);
     this.timer = null;

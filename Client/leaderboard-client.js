@@ -68,9 +68,6 @@ const LB_API = window.location.origin;
       gap: 5px;
     }
 
-    /* ── ROW ── */
-    /* Dùng CSS custom property --lb-bg trên từng row để child dùng lại
-       → không bị conflict khi override */
     .lb-row {
       display: flex;
       align-items: stretch;

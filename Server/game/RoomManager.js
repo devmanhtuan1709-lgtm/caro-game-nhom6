@@ -19,7 +19,6 @@ class RoomManager {
       if (hasReconnecting) continue;
       if (room.players.length === 0 || now - room.lastActive > 120000) {
         for (const p of room.players) delete this.playerToRoom[p.playerId];
-        // FIX: gọi destroy() để clear tất cả timer trước khi xóa
         room.destroy();
         delete this.rooms[id];
         console.log("Cleaned room:", id);
@@ -59,7 +58,6 @@ class RoomManager {
     if (!room) return;
     room.removePlayer(socket);
     if (room.players.length === 0) {
-      // FIX: destroy() trước khi delete
       room.destroy();
       delete this.rooms[roomId];
       console.log("Deleted empty room:", roomId);

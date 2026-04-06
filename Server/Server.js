@@ -332,7 +332,6 @@ io.on("connection", (socket) => {
     const room = roomManager.getRoom(roomId);
     if (!room) return;
 
-    // FIX: set flag TRƯỚC khi await để tránh race condition
     if (room.statsUpdated) return;
     room.statsUpdated = true;
 

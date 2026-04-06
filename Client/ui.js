@@ -102,11 +102,10 @@ let _reconnectTimer = null;
 let _reconnectSeconds = 0;
 
 function showReconnectOverlay() {
-  // Không hiện nếu đang ở menu hoặc chưa trong ván
   if (!S.roomId || S.roomId === "BOT") return;
 
   let overlay = document.getElementById("reconnectOverlay");
-  if (overlay) return; // đã hiện rồi
+  if (overlay) return;
 
   overlay = document.createElement("div");
   overlay.id = "reconnectOverlay";
@@ -185,7 +184,6 @@ function showReconnectOverlay() {
     _reconnectSeconds++;
     const el = document.getElementById("rcSeconds");
     if (el) el.textContent = _reconnectSeconds;
-    // Sau 8 giây: hiện nút "Thoát phòng"
     if (_reconnectSeconds >= 8) {
       const btn = document.getElementById("rcLeaveBtn");
       if (btn) btn.style.display = "block";
@@ -208,7 +206,6 @@ socket.on("countdown", ({ count }) => { showCountdown(count); });
 
 /* ── SOCKET DISCONNECT / RECONNECT ── */
 socket.on("disconnect", (reason) => {
-  // Không hiện overlay nếu đang ở menu, lobby, hoặc chơi bot
   if (!S.started || S.over || S.bot) return;
   showReconnectOverlay();
 });
@@ -217,7 +214,6 @@ socket.on("connect", () => {
   // Khi reconnect thành công
   hideReconnectOverlay();
 
-  // Nếu đang trong ván → thử rejoin
   if (S.roomId && S.roomId !== "BOT" && MY_ID) {
     socket.emit("reconnectToRoom", { roomId: S.roomId, playerId: MY_ID });
   }
@@ -587,7 +583,6 @@ document.getElementById("btnStartBot").onclick = () => {
 /* ── BOT AI ── */
 let botBoard = [];
 let _botTimer = null;
-// FIX: thêm counter để cancel delayed botMove khi restart
 let _botMoveId = 0;
 
 function startBotTimer() {
@@ -611,7 +606,6 @@ function startBotTimer() {
 }
 function stopBotTimer() { clearInterval(_botTimer); }
 
-// FIX: capture _botMoveId để phát hiện nếu game đã restart trước khi setTimeout chạy
 function botMove() {
   if (S.over || S.turn !== "O") return;
   document.getElementById("board").classList.add("board-disabled");
@@ -1131,7 +1125,6 @@ function restart() {
   document.getElementById("resultPopup").classList.add("hidden");
   document.getElementById("popupConfetti").innerHTML = "";
   if (S.bot) {
-    // FIX: tăng _botMoveId TRƯỚC KHI reset để cancel bất kỳ botMove đang pending trong setTimeout
     _botMoveId++;
     S.turn = "X"; S.started = true; S.over = false; stopBotTimer();
     botBoard = Array(S.size * S.size).fill(""); makeBoard(S.size);

@@ -1,11 +1,7 @@
 // =============================================================================
 //  FRIENDS-CLIENT.JS — Logic kết bạn phía client
-//  Đặt file này trong thư mục Client/ (cùng chỗ với auth.js, ui.js)
-//  Include file này sau auth.js và ui.js trong index.html
-//  <script src="friends-client.js"></script>
 // =============================================================================
 
-// FIX: dùng origin động thay vì hardcode localhost
 const FRIENDS_API = window.location.origin;
 
 // ─────────────────────────────────────────
@@ -29,9 +25,9 @@ async function friendsAPI(method, path, body) {
 // ─────────────────────────────────────────
 //  STATE
 // ─────────────────────────────────────────
-let _friends = [];       // danh sách bạn bè
-let _pending = [];       // lời mời đang chờ
-let _pendingCount = 0;   // số lời mời chưa đọc
+let _friends = [];
+let _pending = [];
+let _pendingCount = 0;
 
 // ─────────────────────────────────────────
 //  MỞ / ĐÓNG PANEL KẾT BẠN
@@ -173,7 +169,6 @@ async function loadFriendsList() {
   _friends = data;
   if (!data.length) { el.innerHTML = `<p class="fr-hint">Chưa có bạn bè nào 😢<br>Tìm kiếm bạn bè theo ID ở tab Tìm kiếm!</p>`; return; }
 
-  // Lấy roomId hiện tại nếu đang trong phòng
   const currentRoomId = window.S?.roomId && !window.S?.bot ? window.S.roomId : null;
 
   el.innerHTML = data.map(f => `
@@ -254,25 +249,21 @@ function escFr(t) {
 // ─────────────────────────────────────────
 //  SOCKET EVENTS — Nhận thông báo realtime
 // ─────────────────────────────────────────
-// Lắng nghe từ socket đã được khởi tạo trong ui.js (biến `socket`)
+
 document.addEventListener("DOMContentLoaded", () => {
-  // Dùng biến socket global từ ui.js
   if (typeof socket === "undefined") return;
 
-  // Có người gửi lời mời kết bạn cho mình
   socket.on("friendRequest", ({ friendshipId, from }) => {
     _pendingCount++;
     updatePendingBadge();
     if (typeof authToast === "function") {
       authToast(`👋 ${from.username} muốn kết bạn với bạn!`, 4000);
     }
-    // Nếu panel đang mở thì reload pending
     if (!document.getElementById("friendsPanel")?.classList.contains("hidden")) {
       loadPendingRequests();
     }
   });
 
-  // Người kia đã chấp nhận lời mời của mình
   socket.on("friendAccepted", ({ friendshipId, by }) => {
     if (typeof authToast === "function") {
       authToast(`🤝 ${by.username} đã chấp nhận lời mời kết bạn!`, 4000);
@@ -282,14 +273,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Được mời vào phòng từ bạn bè
   socket.on("roomInvite", ({ roomId, from }) => {
-    // Hiện popup xác nhận mời vào phòng
     if (window.showConfirm) {
       window.showConfirm(
         `📨 <b>${from.username}</b> mời bạn vào phòng <b>${roomId}</b>. Vào không?`,
         () => {
-          // Dùng hàm joinRoom đã có trong ui.js
           if (typeof joinRoom === "function") joinRoom(roomId);
           else if (typeof socket !== "undefined")
             socket.emit("joinRoom", { roomId, playerId: window.MY_ID, icon: window.myIcon, color: window.myColor });
@@ -301,7 +289,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Khi đăng nhập/đăng xuất: load lại dữ liệu bạn bè
   window.addEventListener("authChanged", () => {
     const user = window.getAuthUser ? window.getAuthUser() : null;
     _friends = []; _pending = []; _pendingCount = 0;
@@ -310,7 +297,7 @@ document.addEventListener("DOMContentLoaded", () => {
       setTimeout(() => {
         loadPendingRequests();
         loadFriendsList();
-      }, 800); // đợi socket reconnect
+      }, 800);
     }
   });
 });
@@ -319,7 +306,6 @@ document.addEventListener("DOMContentLoaded", () => {
 //  INJECT HTML PANEL + CSS VÀO TRANG
 // ─────────────────────────────────────────
 (function injectFriendsUI() {
-  // ── CSS ──
   const style = document.createElement("style");
   style.textContent = `
     /* ── FRIENDS BUTTON ── */
@@ -432,8 +418,6 @@ document.addEventListener("DOMContentLoaded", () => {
   `;
   document.head.appendChild(style);
 
-  // ── HTML ──
-  // Nút mở panel (góc phải dưới)
   const btn = document.createElement("button");
   btn.id = "btnFriends";
   btn.innerHTML = `👥 Bạn bè <span id="friendsBadge" class="hidden">0</span>`;
